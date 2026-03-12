@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 
 from rock.config import RuntimeConfig
@@ -98,6 +99,16 @@ class LocalRuntimeEnv(RuntimeEnv):
                 "local": python_env_path,
                 "container": python_env_path,
             },
+        ]
+        # Also mount the short-version symlink if it exists (e.g., cpython-3.11 -> cpython-3.11.15).
+        # The venv's python binary uses the short symlink path which must be resolvable inside the container.
+        real_path = os.path.realpath(python_env_path)
+        parent_dir = os.path.dirname(real_path)
+        for entry in os.listdir(parent_dir):
+            entry_path = os.path.join(parent_dir, entry)
+            if os.path.islink(entry_path) and os.path.realpath(entry_path) == real_path:
+                mount_configs.append({"local": entry_path, "container": entry_path})
+        mount_configs += [
             {
                 "local": project_root,
                 "container": project_root,
