@@ -17,6 +17,8 @@ from rock.actions import (
 class SandboxStartRequest(BaseModel):
     image: str = ""
     """image"""
+    image_os: str = "linux"
+    """The operating system of the image (e.g., 'linux', 'windows')."""
     auto_clear_time_minutes: int = env_vars.ROCK_DEFAULT_AUTO_CLEAR_TIME_MINUTES
     """The time for automatic container cleaning, with the unit being minutes"""
     pull: Literal["never", "always", "missing"] = "missing"
@@ -24,7 +26,9 @@ class SandboxStartRequest(BaseModel):
     memory: str = "8g"
     """The amount of memory to allocate for the container."""
     cpus: float = 2
-    """The amount of CPUs to allocate for the container."""
+    """The amount of CPUs to allocate for the container. Used as --cpu-shares (cpus * 1024)."""
+    limit_cpus: float | None = None
+    """Hard limit on the number of CPU cores the container can use. Used as --cpus."""
     sandbox_id: str | None = Field(default=None)
     """The id of the sandbox."""
     registry_username: str | None = None
